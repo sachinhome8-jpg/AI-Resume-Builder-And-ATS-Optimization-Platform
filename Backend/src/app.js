@@ -16,6 +16,15 @@ app.use(cors({
     credentials: true
 }))
 
+/* Root API Status */
+app.get("/", (req, res) => {
+    res.status(200).json({
+        status: "success",
+        message: "HireReady Backend API is live and running!",
+        healthCheck: "/api/health"
+    })
+})
+
 /* API Health Check */
 app.get("/api/health", (req, res) => {
     res.status(200).json({
