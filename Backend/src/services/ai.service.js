@@ -75,13 +75,44 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     return JSON.parse(response.text)
 }
 
+async function getPuppeteerBrowser() {
+    if (process.env.NODE_ENV === "production" || process.env.RENDER) {
+        try {
+            const puppeteerCore = require("puppeteer-core")
+            const chromium = require("@sparticuz/chromium")
+            const execPath = await chromium.executablePath()
+            if (execPath) {
+                return await puppeteerCore.launch({
+                    args: [ ...(chromium.args || []), "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" ],
+                    defaultViewport: chromium.defaultViewport,
+                    executablePath: execPath,
+                    headless: chromium.headless,
+                    ignoreHTTPSErrors: true
+                })
+            }
+        } catch (err) {
+            console.warn("Chromium launch failed, falling back to puppeteer:", err.message)
+        }
+    }
+
+    return await puppeteer.launch({
+        headless: "new",
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--no-first-run",
+            "--no-zygote",
+            "--single-process"
+        ]
+    })
+}
+
 async function generatePdfFromHtml(htmlContent) {
     let browser = null
     try {
-        browser = await puppeteer.launch({
-            headless: "new",
-            args: [ "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" ]
-        })
+        browser = await getPuppeteerBrowser()
         const page = await browser.newPage()
         await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 30000 })
         await new Promise(resolve => setTimeout(resolve, 500))
