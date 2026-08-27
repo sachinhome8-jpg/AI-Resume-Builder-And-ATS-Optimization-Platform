@@ -22,6 +22,7 @@
     "mongoose": "^9.2.1",
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.20.1",
     "puppeteer": "^24.37.5",
     "puppeteer-core": "^25.9.0",
     "zod": "^3.25.76",

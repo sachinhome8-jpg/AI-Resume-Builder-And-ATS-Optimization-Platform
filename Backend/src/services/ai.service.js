@@ -2,7 +2,7 @@ require("dotenv").config()
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
-const puppeteer = require("puppeteer")
+const PDFDocument = require("pdfkit")
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -33,13 +33,50 @@ const interviewReportSchema = z.object({
     title: z.string().describe("The title of the job for which the interview report is generated"),
 })
 
+const resumeDataSchema = z.object({
+    fullName: z.string().describe("Candidate full name"),
+    contact: z.object({
+        email: z.string().optional().describe("Email address"),
+        phone: z.string().optional().describe("Phone number"),
+        location: z.string().optional().describe("City, State or Country"),
+        linkedin: z.string().optional().describe("LinkedIn profile URL or username"),
+        github: z.string().optional().describe("GitHub profile URL or username"),
+        portfolio: z.string().optional().describe("Portfolio website URL")
+    }),
+    summary: z.string().describe("A powerful 3-4 sentence professional summary tailored specifically to the target job description"),
+    skills: z.array(z.object({
+        category: z.string().describe("e.g. Technical Skills, Frameworks & Libraries, Tools & Cloud, Core Competencies"),
+        items: z.array(z.string()).describe("List of relevant skills matching the job description")
+    })),
+    experience: z.array(z.object({
+        title: z.string().describe("Job title or role"),
+        company: z.string().describe("Company or Organization name"),
+        location: z.string().optional().describe("Location e.g. San Francisco, CA or Remote"),
+        period: z.string().describe("Duration e.g. June 2023 - Present"),
+        highlights: z.array(z.string()).describe("3-4 strong, action-oriented bullet points with quantified results and keywords")
+    })),
+    projects: z.array(z.object({
+        name: z.string().describe("Project name"),
+        techStack: z.string().optional().describe("Key technologies e.g. React, Node.js, MongoDB"),
+        highlights: z.array(z.string()).describe("Key features and achievements")
+    })),
+    education: z.array(z.object({
+        degree: z.string().describe("Degree name e.g. B.Tech in Computer Science"),
+        institution: z.string().describe("University / College name"),
+        year: z.string().describe("Graduation year or date range"),
+        grade: z.string().optional().describe("GPA or Percentage if applicable")
+    }))
+})
+
 async function callGeminiWithFallback(params) {
     const modelsToTry = [
-        process.env.GEMINI_MODEL || "gemini-3.6-flash",
-        "gemini-3.5-flash-lite",
-        "gemini-3.1-flash-lite"
-    ]
-    const uniqueModels = [ ...new Set(modelsToTry.filter(Boolean)) ]
+        process.env.GEMINI_MODEL,
+        "gemini-2.5-flash",
+        "gemini-1.5-flash",
+        "gemini-2.0-flash",
+        "gemini-2.5-flash-lite"
+    ].filter(Boolean)
+    const uniqueModels = [ ...new Set(modelsToTry) ]
     let lastError = null
 
     for (const model of uniqueModels) {
@@ -59,9 +96,9 @@ async function callGeminiWithFallback(params) {
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
     const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
+Resume: ${resume}
+Self Description: ${selfDescription}
+Job Description: ${jobDescription}
 `
 
     const response = await callGeminiWithFallback({
@@ -75,95 +112,174 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     return JSON.parse(response.text)
 }
 
-async function getPuppeteerBrowser() {
-    if (process.env.NODE_ENV === "production" || process.env.RENDER) {
+function generatePdfWithPDFKit(data) {
+    return new Promise((resolve, reject) => {
         try {
-            const puppeteerCore = require("puppeteer-core")
-            const chromium = require("@sparticuz/chromium")
-            const execPath = await chromium.executablePath()
-            if (execPath) {
-                return await puppeteerCore.launch({
-                    args: [ ...(chromium.args || []), "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage" ],
-                    defaultViewport: chromium.defaultViewport,
-                    executablePath: execPath,
-                    headless: chromium.headless,
-                    ignoreHTTPSErrors: true
+            const doc = new PDFDocument({
+                size: "A4",
+                margins: { top: 32, bottom: 32, left: 36, right: 36 },
+                bufferPages: true
+            })
+
+            const chunks = []
+            doc.on("data", chunk => chunks.push(chunk))
+            doc.on("end", () => resolve(Buffer.concat(chunks)))
+            doc.on("error", err => reject(err))
+
+            const primaryColor = "#0f172a" // slate-900
+            const accentColor = "#2563eb"  // blue-600
+            const textColor = "#334155"    // slate-700
+            const mutedColor = "#64748b"   // slate-500
+            const dividerColor = "#cbd5e1" // slate-300
+
+            const addSectionHeader = (title) => {
+                doc.moveDown(0.5)
+                doc.font("Helvetica-Bold").fontSize(10.5).fillColor(accentColor).text(title.toUpperCase(), { characterSpacing: 0.6 })
+                const lineY = doc.y + 1
+                doc.strokeColor(accentColor).lineWidth(1).moveTo(doc.page.margins.left, lineY).lineTo(doc.page.width - doc.page.margins.right, lineY).stroke()
+                doc.moveDown(0.3)
+            }
+
+            // 1. Header (Name & Contact)
+            if (data.fullName) {
+                doc.font("Helvetica-Bold").fontSize(18).fillColor(primaryColor).text(data.fullName, { align: "center" })
+            }
+
+            const contactItems = []
+            if (data.contact?.email) contactItems.push(data.contact.email)
+            if (data.contact?.phone) contactItems.push(data.contact.phone)
+            if (data.contact?.location) contactItems.push(data.contact.location)
+            if (data.contact?.linkedin) contactItems.push(data.contact.linkedin)
+            if (data.contact?.github) contactItems.push(data.contact.github)
+            if (data.contact?.portfolio) contactItems.push(data.contact.portfolio)
+
+            if (contactItems.length > 0) {
+                doc.moveDown(0.15)
+                doc.font("Helvetica").fontSize(8.5).fillColor(mutedColor).text(contactItems.join("   •   "), { align: "center" })
+            }
+
+            doc.moveDown(0.2)
+            doc.strokeColor(dividerColor).lineWidth(0.5).moveTo(doc.page.margins.left, doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke()
+
+            // 2. Summary
+            if (data.summary) {
+                addSectionHeader("Professional Summary")
+                doc.font("Helvetica").fontSize(9).fillColor(textColor).text(data.summary, { lineGap: 2, align: "justify" })
+            }
+
+            // 3. Skills
+            if (data.skills && data.skills.length > 0) {
+                addSectionHeader("Technical Skills")
+                data.skills.forEach(skillGroup => {
+                    if (skillGroup.items && skillGroup.items.length > 0) {
+                        doc.font("Helvetica-Bold").fontSize(9).fillColor(primaryColor).text(`${skillGroup.category}: `, { continued: true })
+                        doc.font("Helvetica").fillColor(textColor).text(skillGroup.items.join(", "), { lineGap: 1.5 })
+                    }
                 })
             }
-        } catch (err) {
-            console.warn("Chromium launch failed, falling back to puppeteer:", err.message)
-        }
-    }
 
-    return await puppeteer.launch({
-        headless: "new",
-        args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--no-first-run",
-            "--no-zygote",
-            "--single-process"
-        ]
-    })
-}
+            // 4. Experience
+            if (data.experience && data.experience.length > 0) {
+                addSectionHeader("Professional Experience")
+                data.experience.forEach(exp => {
+                    doc.moveDown(0.25)
+                    const titleCompany = `${exp.title || ""}${exp.company ? " — " + exp.company : ""}${exp.location ? " (" + exp.location + ")" : ""}`.trim()
+                    const startY = doc.y
 
-async function generatePdfFromHtml(htmlContent) {
-    let browser = null
-    try {
-        browser = await getPuppeteerBrowser()
-        const page = await browser.newPage()
-        await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 30000 })
-        await new Promise(resolve => setTimeout(resolve, 500))
+                    doc.font("Helvetica-Bold").fontSize(9.5).fillColor(primaryColor).text(titleCompany, { continued: false })
+                    if (exp.period) {
+                        doc.font("Helvetica-Oblique").fontSize(8.5).fillColor(mutedColor).text(exp.period, doc.page.margins.left, startY, {
+                            align: "right",
+                            width: doc.page.width - doc.page.margins.left - doc.page.margins.right
+                        })
+                    }
 
-        const pdfBuffer = await page.pdf({
-            format: "A4",
-            printBackground: true,
-            margin: {
-                top: "15mm",
-                bottom: "15mm",
-                left: "15mm",
-                right: "15mm"
+                    if (exp.highlights && exp.highlights.length > 0) {
+                        doc.moveDown(0.15)
+                        exp.highlights.forEach(bullet => {
+                            doc.font("Helvetica").fontSize(8.5).fillColor(textColor).text(`•  ${bullet}`, {
+                                indent: 8,
+                                lineGap: 1.5
+                            })
+                        })
+                    }
+                })
             }
-        })
 
-        return pdfBuffer
-    } finally {
-        if (browser) {
-            await browser.close()
+            // 5. Projects
+            if (data.projects && data.projects.length > 0) {
+                addSectionHeader("Key Projects")
+                data.projects.forEach(proj => {
+                    doc.moveDown(0.25)
+                    const projTitle = proj.name || "Project"
+                    const startY = doc.y
+
+                    doc.font("Helvetica-Bold").fontSize(9.5).fillColor(primaryColor).text(projTitle, { continued: !!proj.techStack })
+                    if (proj.techStack) {
+                        doc.font("Helvetica-Oblique").fontSize(8.5).fillColor(mutedColor).text(` | ${proj.techStack}`)
+                    }
+
+                    if (proj.highlights && proj.highlights.length > 0) {
+                        doc.moveDown(0.15)
+                        proj.highlights.forEach(bullet => {
+                            doc.font("Helvetica").fontSize(8.5).fillColor(textColor).text(`•  ${bullet}`, {
+                                indent: 8,
+                                lineGap: 1.5
+                            })
+                        })
+                    }
+                })
+            }
+
+            // 6. Education
+            if (data.education && data.education.length > 0) {
+                addSectionHeader("Education")
+                data.education.forEach(edu => {
+                    doc.moveDown(0.25)
+                    const eduTitle = `${edu.degree || ""}${edu.institution ? ", " + edu.institution : ""}`.trim()
+                    const startY = doc.y
+
+                    doc.font("Helvetica-Bold").fontSize(9).fillColor(primaryColor).text(eduTitle, { continued: false })
+                    if (edu.year || edu.grade) {
+                        const meta = [ edu.year, edu.grade ].filter(Boolean).join("  |  ")
+                        doc.font("Helvetica").fontSize(8.5).fillColor(mutedColor).text(meta, doc.page.margins.left, startY, {
+                            align: "right",
+                            width: doc.page.width - doc.page.margins.left - doc.page.margins.right
+                        })
+                    }
+                })
+            }
+
+            doc.end()
+        } catch (err) {
+            reject(err)
         }
-    }
+    })
 }
 
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
-    const resumePdfSchema = z.object({
-        html: z.string().describe("The HTML content of the resume which can be converted to PDF using any library like puppeteer")
-    })
+    const prompt = `You are an expert ATS Resume Builder. Generate a high-impact, tailored resume for this candidate optimized for the given job description:
+Candidate Original Resume: ${resume}
+Candidate Self Description / Extra Details: ${selfDescription}
+Target Job Description: ${jobDescription}
 
-    const prompt = `Generate resume for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
-
-                        the response should be a JSON object with a single field "html" which contains the HTML content of the resume which can be converted to PDF using any library like puppeteer.
-                        The resume should be tailored for the given job description and should highlight the candidate's strengths and relevant experience. The HTML content should be well-formatted and structured, making it easy to read and visually appealing.
-                        The content of resume should be not sound like it's generated by AI and should be as close as possible to a real human-written resume.
-                        you can highlight the content using some colors or different font styles but the overall design should be simple and professional.
-                        The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
-                        The resume should not be so lengthy, it should ideally be 1-2 pages long when converted to PDF. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
-                    `
+Instructions:
+1. Tailor the professional summary, skills, experience bullet points, and projects directly to the target job description.
+2. Use strong action verbs (Architected, Developed, Spearheaded, Optimized, Delivered) and include quantifiable metrics wherever applicable.
+3. Keep the resume crisp, professional, human-sounding, and 100% ATS-friendly.
+4. Extract accurate candidate name and contact information if present in the resume/description.
+`
 
     const response = await callGeminiWithFallback({
         contents: prompt,
         config: {
             responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(resumePdfSchema),
+            responseSchema: zodToJsonSchema(resumeDataSchema),
         }
     })
 
-    const jsonContent = JSON.parse(response.text)
-    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+    const resumeData = JSON.parse(response.text)
+    const pdfBuffer = await generatePdfWithPDFKit(resumeData)
 
     return pdfBuffer
 }
