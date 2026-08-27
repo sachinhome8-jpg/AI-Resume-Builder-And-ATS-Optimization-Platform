@@ -1,0 +1,543 @@
+// ── Variables ────────────────────────────────────────────────────────────────
+$bg-page:        #090d16;
+$bg-card:        rgba(22, 27, 34, 0.75);
+$bg-panel:       rgba(28, 34, 48, 0.65);
+$bg-input:       rgba(15, 23, 42, 0.6);
+$border-color:   rgba(255, 255, 255, 0.08);
+$border-glow:    rgba(255, 45, 120, 0.35);
+$text-primary:   #f8fafc;
+$text-secondary: #cbd5e1;
+$text-muted:     #64748b;
+$accent:         #ff2d78;
+$accent-alt:     #a855f7;
+$font-stack:     'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+// ── Page Shell ────────────────────────────────────────────────────────────────
+.interview-page {
+    width: 100%;
+    min-height: 100vh;
+    background-color: $bg-page;
+    color: $text-primary;
+    font-family: $font-stack;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-x: hidden;
+}
+
+// ── 3-Column Layout ───────────────────────────────────────────────────────────
+.interview-layout {
+    display: flex;
+    width: 100%;
+    max-width: 1360px;
+    background: rgba(22, 27, 34, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 45, 120, 0.35);
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.7), 0 0 32px rgba(255, 45, 120, 0.08);
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+
+    @media (max-width: 1080px) {
+        flex-direction: column;
+    }
+}
+
+.interview-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+
+    @media (max-width: 1080px) {
+        width: 100%;
+        height: 1px;
+    }
+}
+
+// ── Left Nav ─────────────────────────────────────────────────────────────────
+.interview-nav {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: rgba(15, 23, 42, 0.35);
+
+    @media (max-width: 1080px) {
+        width: 100%;
+        padding: 1.5rem;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s;
+        margin-bottom: 1.25rem;
+        padding: 0;
+
+        &:hover {
+            color: $accent;
+        }
+    }
+
+    &__label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: $text-muted;
+        padding: 0 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: none;
+        border: 1px solid transparent;
+        border-radius: 0.75rem;
+        color: #94a3b8;
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 0.35rem;
+
+        .interview-nav__icon {
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+            color: #fff;
+        }
+
+        &--active {
+            background: rgba(255, 45, 120, 0.12);
+            border-color: rgba(255, 45, 120, 0.3);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(255, 45, 120, 0.15);
+
+            .interview-nav__icon {
+                color: $accent;
+                opacity: 1;
+            }
+        }
+    }
+
+    .resume-download-btn {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #ff2d78 0%, #a855f7 100%);
+        color: #fff;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 45, 120, 0.35);
+        transition: all 0.25s ease;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(255, 45, 120, 0.55);
+        }
+    }
+}
+
+// ── Center Content ───────────────────────────────────────────────────────────
+.interview-content {
+    flex: 1;
+    padding: 2.25rem 2rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 3rem);
+
+    @media (max-width: 1080px) {
+        max-height: none;
+        padding: 1.5rem;
+    }
+
+    .content-header {
+        margin-bottom: 2rem;
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: $accent;
+            background: rgba(255, 45, 120, 0.12);
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 45, 120, 0.25);
+            margin-bottom: 0.75rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.25;
+        }
+
+        p {
+            color: $text-secondary;
+            font-size: 0.92rem;
+            margin: 0;
+        }
+    }
+}
+
+// ── Question Cards (Accordion) ────────────────────────────────────────────────
+.q-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.q-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        border-color: rgba(255, 45, 120, 0.3);
+        background: rgba(15, 23, 42, 0.75);
+    }
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        cursor: pointer;
+        user-select: none;
+
+        .q-card__index {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: $accent;
+            background: rgba(255, 45, 120, 0.12);
+            border: 1px solid rgba(255, 45, 120, 0.25);
+            padding: 4px 8px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .q-card__question {
+            flex: 1;
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            line-height: 1.45;
+        }
+
+        .q-card__chevron {
+            color: #64748b;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            margin-top: 4px;
+
+            &--open {
+                transform: rotate(180deg);
+                color: $accent;
+            }
+        }
+    }
+
+    &__body {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        animation: fadeIn 0.3s ease-out;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 0.25rem;
+        padding-top: 1.25rem;
+    }
+
+    &__section {
+        background: rgba(22, 27, 34, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .section-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .q-card__tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+
+            &--intention {
+                background: rgba(168, 85, 247, 0.15);
+                color: #c084fc;
+                border: 1px solid rgba(168, 85, 247, 0.3);
+            }
+
+            &--answer {
+                background: rgba(16, 185, 129, 0.15);
+                color: #34d399;
+                border: 1px solid rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: #fff;
+            }
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: $text-secondary;
+            line-height: 1.6;
+        }
+    }
+}
+
+// ── Interactive Timeline Roadmap ──────────────────────────────────────────────
+.roadmap-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    padding-left: 1.5rem;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 15px;
+        bottom: 15px;
+        width: 2px;
+        background: linear-gradient(180deg, #ff2d78 0%, #a855f7 50%, rgba(255, 255, 255, 0.1) 100%);
+    }
+
+    .roadmap-day {
+        position: relative;
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: rgba(255, 45, 120, 0.3);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 1.5rem;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff2d78;
+            box-shadow: 0 0 10px #ff2d78;
+            border: 2px solid #090d16;
+        }
+
+        &__header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            .roadmap-day__badge {
+                font-size: 0.78rem;
+                font-weight: 800;
+                color: #fff;
+                background: linear-gradient(135deg, #ff2d78, #a855f7);
+                padding: 4px 10px;
+                border-radius: 6px;
+                flex-shrink: 0;
+            }
+
+            .roadmap-day__focus {
+                margin: 0;
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: #fff;
+            }
+        }
+
+        &__tasks {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            padding: 0;
+            margin: 0;
+
+            li {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.65rem;
+                font-size: 0.88rem;
+                color: $text-secondary;
+                line-height: 1.5;
+
+                input[type="checkbox"] {
+                    margin-top: 4px;
+                    accent-color: #ff2d78;
+                    cursor: pointer;
+                    width: 15px;
+                    height: 15px;
+                }
+            }
+        }
+    }
+}
+
+// ── Right Analytics Sidebar ───────────────────────────────────────────────────
+.interview-analytics {
+    width: 320px;
+    flex-shrink: 0;
+    padding: 2.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background: rgba(15, 23, 42, 0.35);
+    overflow-y: auto;
+    max-height: calc(100vh - 3rem);
+
+    @media (max-width: 1080px) {
+        width: 100%;
+        max-height: none;
+        padding: 1.5rem;
+    }
+
+    .analytics-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    }
+
+    // Skill Gaps Cards
+    .skill-gaps-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .skill-gap-card {
+            background: rgba(22, 27, 34, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.85rem;
+            padding: 0.85rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+
+            .gap-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .skill-name {
+                    font-size: 0.88rem;
+                    font-weight: 700;
+                    color: #fff;
+                }
+
+                .severity-tag {
+                    font-size: 0.7rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    padding: 2px 7px;
+                    border-radius: 4px;
+
+                    &--high {
+                        background: rgba(239, 68, 68, 0.15);
+                        color: #f87171;
+                        border: 1px solid rgba(239, 68, 68, 0.3);
+                    }
+
+                    &--medium {
+                        background: rgba(245, 158, 11, 0.15);
+                        color: #fbbf24;
+                        border: 1px solid rgba(245, 158, 11, 0.3);
+                    }
+
+                    &--low {
+                        background: rgba(16, 185, 129, 0.15);
+                        color: #34d399;
+                        border: 1px solid rgba(16, 185, 129, 0.3);
+                    }
+                }
+            }
+        }
+    }
+}

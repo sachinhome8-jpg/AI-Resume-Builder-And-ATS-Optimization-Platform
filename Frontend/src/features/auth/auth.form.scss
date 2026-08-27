@@ -1,0 +1,192 @@
+.auth-page {
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1.5rem;
+    overflow: hidden;
+
+    .auth-card-container {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 440px;
+        background: rgba(22, 27, 34, 0.75);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 45, 120, 0.4);
+        box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 45, 120, 0.12);
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        animation: cardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .auth-brand-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+
+        .brand-logo {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+
+            .brand-accent {
+                color: #ff2d78;
+            }
+        }
+
+        .brand-subtitle {
+            color: #94a3b8;
+            font-size: 0.88rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+    }
+
+    .feature-pills {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+
+        .feature-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+    }
+
+    .auth-error-alert {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        animation: slideDown 0.3s ease;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            text-align: left;
+
+            label {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: #cbd5e1;
+                letter-spacing: 0.3px;
+            }
+
+            .input-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                .input-icon {
+                    position: absolute;
+                    left: 1rem;
+                    color: #64748b;
+                    pointer-events: none;
+                    display: flex;
+                    align-items: center;
+                }
+
+                input {
+                    width: 100%;
+                    background: rgba(15, 23, 42, 0.6);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 0.75rem;
+                    padding: 0.8rem 1rem 0.8rem 2.75rem;
+                    color: #f8fafc;
+                    font-size: 0.92rem;
+                    font-family: inherit;
+                    outline: none;
+                    transition: all 0.2s ease;
+
+                    &::placeholder {
+                        color: #475569;
+                    }
+
+                    &:focus {
+                        border-color: #ff2d78;
+                        background: rgba(15, 23, 42, 0.9);
+                        box-shadow: 0 0 0 3px rgba(255, 45, 120, 0.2);
+                    }
+                }
+            }
+        }
+    }
+
+    .auth-switch {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin: 0;
+
+        a {
+            color: #ff2d78;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: color 0.2s;
+
+            &:hover {
+                color: #ff6b9d;
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
