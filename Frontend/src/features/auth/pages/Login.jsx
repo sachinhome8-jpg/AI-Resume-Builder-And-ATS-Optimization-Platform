@@ -4,6 +4,8 @@ import '../auth.form.scss'
 import { useAuth } from '../hooks/useAuth'
 import ThreeBackground from '../../../components/ThreeBackground'
 
+import AppLoadingScreen from '../../../components/AppLoadingScreen'
+
 const Login = () => {
     const { user, loading, handleLogin, handleLogout } = useAuth()
     const navigate = useNavigate()
@@ -33,12 +35,10 @@ const Login = () => {
 
     if (loading) {
         return (
-            <main className='auth-page'>
-                <ThreeBackground particleCount={40} />
-                <div className='auth-card-container' style={{ textAlign: 'center' }}>
-                    <h2>Loading profile...</h2>
-                </div>
-            </main>
+            <AppLoadingScreen 
+                badge="⚡ Authenticating"
+                subtitle="Checking your session status..."
+            />
         )
     }
 

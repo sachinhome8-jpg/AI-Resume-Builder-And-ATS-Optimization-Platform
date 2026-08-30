@@ -6,6 +6,8 @@ import { useNavigate, useParams } from 'react-router'
 import ScoreGauge from '../components/ScoreGauge.jsx'
 import ThreeBackground from '../../../components/ThreeBackground.jsx'
 
+import AppLoadingScreen from '../../../components/AppLoadingScreen.jsx'
+
 const NAV_ITEMS = [
     {
         id: 'technical',
@@ -135,22 +137,10 @@ const Interview = () => {
 
     if (loading || !report) {
         return (
-            <main className='loading-screen'>
-                <ThreeBackground particleCount={40} />
-                <div className='loading-container' style={{ maxWidth: '440px', gap: '1.25rem' }}>
-                    <div className='loading-radar'>
-                        <div className='radar-ring radar-ring--outer'></div>
-                        <div className='radar-ring radar-ring--inner'></div>
-                        <div className='radar-core'>
-                            <span className='radar-icon'>📋</span>
-                        </div>
-                    </div>
-                    <div className='loading-header'>
-                        <h2 style={{ fontSize: '1.25rem', color: '#fff', margin: 0 }}>Loading Interview Strategy</h2>
-                        <p style={{ fontSize: '0.85rem', color: '#8b949e', margin: '4px 0 0 0' }}>Retrieving your questions, insights, and preparation roadmap...</p>
-                    </div>
-                </div>
-            </main>
+            <AppLoadingScreen 
+                badge="📊 Strategy Report"
+                subtitle="Retrieving tailored technical questions, behavioral insights, and your preparation roadmap..."
+            />
         )
     }
 
